@@ -1,15 +1,29 @@
 package au.edu.rmit.sct;
-import java.util.HashMap;
-import java.util.Date;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class Person {
-    private String personId;
-    private String firstName;
-    private String lastName;
-    private String address;
-    private Date birthDate;
-    private HashMap<Date, Integer> demeritPoints;
-    private boolean isSuspended;
+    private final String personId;
+    private final String firstName;
+    private final String lastName;
+    private final String address;
+    private final Date birthDate;
+    private final HashMap<Date, Integer> demeritPoints;
+    private final boolean isSuspended;
+
+    private static final Set<Character> SPECIAL_CHARACTERS_SET = Set.of(
+            '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '=', '_', '+',
+            '[', '{', ']', '}', '\\', '|', ';', ':', '\'', '"', ',', '<', '.', '>', '/', '?'
+    );
+
+    private final int VICTORIA_INDEX = 3;
+    private final String VICTORIA = "Victoria";
+
 
     protected Person(String personId,
                   String firstName,
@@ -28,6 +42,123 @@ public class Person {
         this.isSuspended = isSuspended;
     }
 
+    public static String formatDate(Date date, DateTimeFormatter formatter) {
+        return date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+                .format(formatter);
+    }
+
+    public String formatToText() {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String birthDateFormatted = formatDate(birthDate, dtf);
+
+        StringBuilder map = new StringBuilder();
+        for (Map.Entry<Date, Integer> entry : demeritPoints.entrySet()) {
+            Date key = entry.getKey();
+            Integer value = entry.getValue();
+            map.append("demeritPoints: (")
+                    .append(formatDate(key, dtf))
+                    .append(", ")
+                    .append(value)
+                    .append(")\n");
+        }
+
+        String demeritPointsString = map.toString();
+
+        return "personID:" + personId + "\n"
+                + "firstName:" + firstName + "\n"
+                + "lastName:" + lastName + "\n"
+                + "address:" + address + "\n"
+                + "birthDate:" + birthDateFormatted + "\n"
+                + demeritPointsString
+                + "isSuspended:" + isSuspended + "\n";
+
+    }
+
+    private static boolean checkCharInAsciiRange(char c, char start, char end) {
+        return c >= start && c <= end;
+    }
+
+    private boolean verifyPersonID() {
+        // Condition 1: personID must be exactly 10 characters long
+        // first two characters must be numbers between 2 and 9
+        // there must be at least two special characters between characters 3 and 8
+        // last two characters must be uppercase letters A-Z
+        // DOES NOT check if personID already exists
+        if (personId == null || personId.isEmpty()) return false;
+        if (personId.length() != 10) return false;
+        char[] chars = personId.toCharArray();
+
+        // check first two characters
+        if (!Person.checkCharInAsciiRange(chars[0], '2', '9')) return false;
+        if (!Person.checkCharInAsciiRange(chars[1], '2', '9')) return false;
+
+        // check characters 3-8
+        int num_special_characters = 0;
+        for (int i = 2; i <= 7; i++) {
+            if (SPECIAL_CHARACTERS_SET.contains(chars[i])) num_special_characters++;
+        }
+        if (num_special_characters < 2) return false;
+
+        // check characters 9 and 10
+        if (!Person.checkCharInAsciiRange(chars[8], 'A', 'Z')) return false;
+        return Person.checkCharInAsciiRange(chars[9], 'A', 'Z');
+
+        // if passed everything stated, personID is valid
+    }
+
+    public boolean verifyAddress() {
+        // Condition 2: the address should be in the format
+        // Street Number|Street|City|State|Country
+        // State must be victoria
+
+        String[] addressParts = address.split("\\|");
+        if (addressParts.length != 5) return false;
+        return addressParts[VICTORIA_INDEX].equals(VICTORIA);
+    }
+
+    private boolean doesPersonFileExist() {
+        Path dir = Paths.get("PersonsFiles");
+        String[] fileNames = dir.toFile().list();
+        String lookingFor = personId + ".txt";
+        if (fileNames == null) return false;
+        return Arrays.asList(fileNames).contains(lookingFor);
+    }
+
+    private Path createPersonFile() {
+        Path path = Paths.get("PersonsFiles/" + personId + ".txt");
+        try {
+            Files.createFile(path);
+            return path;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void writeToFile(Path file) {
+        try {
+            Files.writeString(file, formatToText());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private boolean toTextFile() {
+        // The format of this text file is going to be as follows
+        // FIELD_NAME: VALUE
+        // for the HashMap where multiple values exist, the name will simply be repeated, i.e.
+        // MAP: VALUE
+        // MAP: ANOTHER_VALUE
+
+        // first we will check that the file does not already exist
+        if (doesPersonFileExist()) return false;
+
+        // now we create a new file
+        Path file = createPersonFile();
+        writeToFile(file);
+        return true;
+    }
 
     public boolean addPerson() {
         // Condition 1: personID must be exactly 10 characters long
@@ -41,11 +172,17 @@ public class Person {
         // State must be victoria
 
         // Condition 3: format of birthdate must be DD-MM-YYYY
+        // in java the equivalent would be dd-MM-yyyy
+        // and is a given using the Date class
 
         // The information must be placed in a text file that should be human-readable
         // ONLY if the prior three conditions are met
-        return false; // TODO
+        if (!verifyPersonID()) return false;
+        if (!verifyAddress()) return false;
+        return toTextFile();
     }
+
+
 
     public boolean updatePersonalDetails() {
         // Condition 1: If person is under 18 address cannot be changed

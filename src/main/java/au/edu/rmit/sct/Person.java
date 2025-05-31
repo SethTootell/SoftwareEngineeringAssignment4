@@ -3,18 +3,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Person {
-    private final String personId;
-    private final String firstName;
-    private final String lastName;
-    private final String address;
-    private final Date birthDate;
-    private final HashMap<Date, Integer> demeritPoints;
-    private final boolean isSuspended;
+    private String personId;
+    private String firstName;
+    private String lastName;
+    private String address;
+    private Date birthDate;
+    private HashMap<Date, Integer> demeritPoints;
+    private boolean isSuspended;
 
     private static final Set<Character> SPECIAL_CHARACTERS_SET = Set.of(
             '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '=', '_', '+',
@@ -126,8 +128,11 @@ public class Person {
         return Arrays.asList(fileNames).contains(lookingFor);
     }
 
+    private Path getFilePath() {
+        return Paths.get("PersonsFiles", personId + ".txt");
+    }
     private Path createPersonFile() {
-        Path path = Paths.get("PersonsFiles/" + personId + ".txt");
+        Path path = getFilePath();
         try {
             Files.createFile(path);
             return path;
@@ -183,14 +188,77 @@ public class Person {
     }
 
 
+    private void copyFrom(Person other) {
+        this.personId = other.personId;
+        this.firstName = other.firstName;
+        this.lastName = other.lastName;
+        this.address = other.address;
+        this.birthDate = other.birthDate;
+        this.demeritPoints = other.demeritPoints;
+        this.isSuspended = other.isSuspended;
+    }
+    private boolean isUpdatingBirthDate(Person newDetails) {
+        return !Objects.equals(birthDate, newDetails.birthDate);
+    }
 
-    public boolean updatePersonalDetails() {
+    ///  checks if the personID is even and if personID is being changed
+    private boolean personIdUpdateCheck(Person newDetails) {
+        boolean IdChanged = !Objects.equals(personId, newDetails.personId);
+        char first = personId.charAt(0);
+        boolean isEven = Character.isDigit(first) && (Character.getNumericValue(first) & 1) == 0;
+        return !(IdChanged && isEven);
+    }
+
+    private boolean equalsExcludingBirthDate(Person other) {
+        return (Objects.equals(personId, other.personId) &&
+                Objects.equals(firstName, other.firstName) &&
+                Objects.equals(lastName, other.lastName) &&
+                Objects.equals(address, other.address) &&
+                isSuspended == other.isSuspended);
+    }
+    private boolean birthDateUpdateCheck(Person newDetails) {
+        return this.equalsExcludingBirthDate(newDetails) && !isUpdatingBirthDate(newDetails);
+    }
+
+    private int getAgeInYears() {
+        LocalDate birthDate = this.birthDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate now = LocalDate.now();
+        return Period.between(birthDate, now).getYears();
+    }
+
+    private boolean isChangingAddressWhenUnderage(Person newDetails) {
+        return getAgeInYears() < 18 && !Objects.equals(address, newDetails.address);
+    }
+    private boolean canUpdateDetails(Person newDetails) {
+        if (isChangingAddressWhenUnderage(newDetails)) return false;
+        if (!personIdUpdateCheck(newDetails)) return false;
+        return birthDateUpdateCheck(newDetails);
+    }
+
+    private void updateTextFile(Person newDetails) {
+        if (!doesPersonFileExist()) {
+            newDetails.toTextFile();
+        };
+        Path path = getFilePath();
+        try {
+            Files.delete(path);
+            Path newPath = newDetails.getFilePath();
+            writeToFile(newPath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean updatePersonalDetails(Person newDetails) {
         // Condition 1: If person is under 18 address cannot be changed
-        // Condition 2: If a persona birthday is going to be changed, no other personal detail can be changed
+        // Condition 2: If a persons birthday is going to be changed, no other personal detail can be changed
         // Condition 3: If the first character/digit of a person's ID is an even number, then their ID cannot be changed
         // If the above conditions are met their information in the text file must be updated
-        return false; // TODO
+        if (!canUpdateDetails(newDetails)) return false;
+        updateTextFile(newDetails);
+        return true;
     }
+
 
     public String addDemeritPoints() {
         // Condition 1: The format of the date of the offense should follow the following format:  DD-MM-YYYY

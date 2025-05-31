@@ -260,13 +260,50 @@ public class Person {
     }
 
 
-    public String addDemeritPoints() {
+    private static boolean isValidNumberOfPoints(int points) {
+        return points >= 1 && points <= 6;
+    }
+
+    private ArrayList<Date> getDemeritPointsWithinTwoYears() {
+        ArrayList<Date> points = new ArrayList<>();
+        LocalDate twoYearsAgo = LocalDate.now().minusYears(2);
+        for (Date dates: demeritPoints.keySet()) {
+            LocalDate date = dates.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            if (!date.isBefore(twoYearsAgo)) {
+                points.add(dates);
+            }
+        }
+        return points;
+    }
+
+    private void updateDemeritsField(int points) {
+        Date today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        demeritPoints.put(today, points);
+    }
+
+    private void updateSuspension(int points) {
+        updateDemeritsField(points);
+        ArrayList<Date> demeritDates = getDemeritPointsWithinTwoYears();
+        int numPoints = demeritDates.stream().mapToInt(d -> demeritPoints.getOrDefault(d, 0)).sum();
+
+        if (getAgeInYears() >= 21 && numPoints > 12) {
+            isSuspended = true;
+        }
+        else if (getAgeInYears() < 21 && numPoints > 6) {
+            isSuspended = true;
+        }
+        else isSuspended = false;
+    }
+    public String addDemeritPoints(int points) {
         // Condition 1: The format of the date of the offense should follow the following format:  DD-MM-YYYY
         // Condition 2: The demerit points must be a whole number between 1 and 6,
         // If the person is under 21, isSuspended should be set to true if demeritPoints within 2 years is > 6
         // If the person is 21 or over, the above should be set to true if exceeding 12 over two years
         // The demerit points should be updated in the person's file, the function should return "Success" if the above is passed
         // otherwise, "Failure"
+        if (!isValidNumberOfPoints(points)) return "Failure";
+        updateSuspension(points);
+        updateTextFile(this);
         return "Success";
     }
 }

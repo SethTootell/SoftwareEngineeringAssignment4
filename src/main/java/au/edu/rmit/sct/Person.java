@@ -9,8 +9,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import java.lang.System;
-
 public class Person {
     private String personId;
     private String firstName;
@@ -153,7 +151,7 @@ public class Person {
             throw new RuntimeException(e);
         }
     }
-    
+
     private void writeToFile(Path file) {
         try {
             Files.writeString(file, formatToText());
@@ -230,7 +228,10 @@ public class Person {
                 isSuspended == other.isSuspended);
     }
     private boolean birthDateUpdateCheck(Person newDetails) {
-        return this.equalsExcludingBirthDate(newDetails) && !isUpdatingBirthDate(newDetails);
+        //return this.equalsExcludingBirthDate(newDetails) && !isUpdatingBirthDate(newDetails);
+        //If the birth date has not changed, other fields can be updated freely -- yihan
+        if (!isUpdatingBirthDate(newDetails)) return true;
+        return equalsExcludingBirthDate(newDetails);
     }
 
     private int getAgeInYears() {
@@ -251,12 +252,16 @@ public class Person {
     private void updateTextFile(Person newDetails) {
         if (!doesPersonFileExist()) {
             newDetails.toTextFile();
+            return; //yihan
         };
+
         Path path = getFilePath();
         try {
             Files.delete(path);
-            Path newPath = newDetails.getFilePath();
-            writeToFile(newPath);
+            this.copyFrom(newDetails); //yihan
+            writeToFile(path); //yihan
+            //Path newPath = newDetails.getFilePath();
+            //writeToFile(newPath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -62,5 +62,78 @@ public class PersonTest {
         p.addPerson(); 
         assertFalse(p.addPerson()); 
     }
+
+    //updatePersonalDetails()
+    @Test //#1
+    void testUpdateDetails_Under18AddressChange() {
+        Date birthDate = Date.from(LocalDate.of(2010, 10, 14).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        HashMap<Date, Integer> demerits = new HashMap<>();
+        Person original = new Person("24$%_&@!AB", "Alice", "Smith",
+                "12|Main St|Melbourne|Victoria|Australia", birthDate, demerits, false);
+        original.addPerson();
+
+        Person updated = new Person("24$%_&@!AB", "Alice", "Smith",
+                "99|New St|Geelong|Victoria|Australia", birthDate, demerits, false);
+    
+        assertFalse(original.updatePersonalDetails(updated));
+    }
+
+    @Test //#2
+    void testUpdateDetails_ChangeBirthdayAndAddress() {
+        Date birthDate = Date.from(LocalDate.of(2000, 10, 14).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        HashMap<Date, Integer> demerits = new HashMap<>();
+        Person original = new Person("25$%_&@!AB", "Alice", "Smith",
+                "12|Main St|Melbourne|Victoria|Australia", birthDate, demerits, false);
+        original.addPerson();
+
+        Date newBirthDate = Date.from(LocalDate.of(2002, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Person updated = new Person("25$%_&@!AB", "Alice", "Smith",
+                "99|New St|Melbourne|Victoria|Australia", newBirthDate, demerits, false);
+    
+        assertFalse(original.updatePersonalDetails(updated));
+    }
+
+    @Test //#3
+    void testUpdateDetails_EvenIDCannotChange() {
+        Date birthDate = Date.from(LocalDate.of(2000, 10, 14).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        HashMap<Date, Integer> demerits = new HashMap<>();
+        Person original = new Person("26$%_&@!AB", "Alice", "Smith",
+                "12|Main St|Melbourne|Victoria|Australia", birthDate, demerits, false);
+        original.addPerson();
+
+        Person updated = new Person("22$%_&@!AB", "Alice", "Smith",
+                "12|Main St|Melbourne|Victoria|Australia", birthDate, demerits, false);
+    
+        assertFalse(original.updatePersonalDetails(updated));
+    }
+
+    @Test //#4
+    void testUpdateDetails_OnlyChangeBirthday() {
+        Date birthDate = Date.from(LocalDate.of(2000, 10, 14).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        HashMap<Date, Integer> demerits = new HashMap<>();
+        Person original = new Person("27$%_&@!AB", "Alice", "Smith",
+             "12|Main St|Melbourne|Victoria|Australia", birthDate, demerits, false);
+        original.addPerson();
+
+        Date newBirthDate = Date.from(LocalDate.of(2001, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Person updated = new Person("27$%_&@!AB", "Alice", "Smith",
+                "12|Main St|Melbourne|Victoria|Australia", newBirthDate, demerits, false);
+    
+        assertTrue(original.updatePersonalDetails(updated));
+    }
+
+    @Test //#5
+    void testUpdateDetails_ValidUpdate() {
+        Date birthDate = Date.from(LocalDate.of(2000, 10, 14).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        HashMap<Date, Integer> demerits = new HashMap<>();
+        Person original = new Person("28$%_&@!AB", "Alice", "Smith",
+                "12|Main St|Melbourne|Victoria|Australia", birthDate, demerits, false);
+        original.addPerson();
+
+        Person updated = new Person("28$%_&@!AB", "Alicia", "Smith",
+                "12|New St|Geelong|Victoria|Australia", birthDate, demerits, false);
+    
+        assertTrue(original.updatePersonalDetails(updated));
+    }
    
 }

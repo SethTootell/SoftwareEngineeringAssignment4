@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -14,6 +15,10 @@ public class PersonTest {
     //addPerson()
     @Test //#1
     void testAddPerson_validInput() {
+        File file = new File("PersonsFiles/23$%_&@!AB.txt");
+        if (file.exists()) {
+            file.delete();
+        }
         Date birthDate = Date.from(LocalDate.of(2000, 5, 15).atStartOfDay(ZoneId.systemDefault()).toInstant());
         HashMap<Date, Integer> demerits = new HashMap<>();
         Person p = new Person("23$%_&@!AB", "Alice", "Smith",
@@ -25,7 +30,7 @@ public class PersonTest {
     void testAddPerson_invalidIDLength() {
         Date birthDate = Date.from(LocalDate.of(2000, 5, 15).atStartOfDay(ZoneId.systemDefault()).toInstant());
         HashMap<Date, Integer> demerits = new HashMap<>();
-        Person p = new Person("23$%&@AB", "Bob", "Brown",
+        Person p = new Person("23$%&@AC", "Bob", "Brown",
                 "12|Main St|Melbourne|Victoria|Australia", birthDate, demerits, false);
         assertFalse(p.addPerson());
     }
@@ -34,7 +39,7 @@ public class PersonTest {
     void testAddPerson_invalidStateInAddress() {
         Date birthDate = Date.from(LocalDate.of(2000, 5, 15).atStartOfDay(ZoneId.systemDefault()).toInstant());
         HashMap<Date, Integer> demerits = new HashMap<>();
-        Person p = new Person("23$%&@!AB", "Cathy", "Davis",
+        Person p = new Person("23$%&@!AD", "Cathy", "Davis",
                 "12|Main St|Melbourne|NSW|Australia", birthDate, demerits, false);
         assertFalse(p.addPerson());
     }

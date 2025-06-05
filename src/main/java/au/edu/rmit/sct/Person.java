@@ -9,6 +9,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import java.lang.System;
+
 public class Person {
     private String personId;
     private String firstName;
@@ -132,6 +134,17 @@ public class Person {
         return Paths.get("PersonsFiles", personId + ".txt");
     }
     private Path createPersonFile() {
+        // Define the directory path where person files will be stored -- yihan
+        Path dir = Paths.get("PersonsFiles");
+        // If the directory does not exist, create it -- yihan
+        if (!Files.exists(dir)) {
+            try {
+                Files.createDirectory(dir);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         Path path = getFilePath();
         try {
             Files.createFile(path);
@@ -140,7 +153,7 @@ public class Person {
             throw new RuntimeException(e);
         }
     }
-
+    
     private void writeToFile(Path file) {
         try {
             Files.writeString(file, formatToText());
@@ -184,7 +197,7 @@ public class Person {
         // ONLY if the prior three conditions are met
         if (!verifyPersonID()) return false;
         if (!verifyAddress()) return false;
-        return toTextFile();
+        return toTextFile(); //yihan
     }
 
 

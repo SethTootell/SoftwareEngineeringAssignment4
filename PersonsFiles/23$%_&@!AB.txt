@@ -1,0 +1,6 @@
+personID:23$%_&@!AB
+firstName:Alice
+lastName:Smith
+address:12|Main St|Melbourne|Victoria|Australia
+birthDate:14-10-2005
+isSuspended:false

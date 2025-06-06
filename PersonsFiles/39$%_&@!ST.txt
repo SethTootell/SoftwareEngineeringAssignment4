@@ -1,0 +1,7 @@
+personID:39$%_&@!ST
+firstName:Isaac
+lastName:Brown
+address:12|West St|Geelong|Victoria|Australia
+birthDate:14-10-2000
+demeritPoints: (06-06-2025, 6)
+isSuspended:false

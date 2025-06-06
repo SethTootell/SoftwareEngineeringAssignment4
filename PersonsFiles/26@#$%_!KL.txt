@@ -1,0 +1,6 @@
+personID:26@#$%_!KL
+firstName:Ethan
+lastName:Collins
+address:88|Old St|Geelong|Victoria|Australia
+birthDate:14-10-2010
+isSuspended:false

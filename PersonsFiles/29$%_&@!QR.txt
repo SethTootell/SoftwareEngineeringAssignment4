@@ -1,0 +1,6 @@
+personID:29$%_&@!QR
+firstName:Hannah
+lastName:Kim
+address:23|High St|Melbourne|Victoria|Australia
+birthDate:01-01-2001
+isSuspended:false

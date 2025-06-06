@@ -1,0 +1,8 @@
+personID:28$%_&@!OP
+firstName:George
+lastName:Harris
+address:45|Hill St|Melbourne|Victoria|Australia
+birthDate:14-10-2000
+demeritPoints: (06-03-2025, 10)
+demeritPoints: (06-06-2025, 5)
+isSuspended:true

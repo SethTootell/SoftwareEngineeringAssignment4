@@ -1,0 +1,6 @@
+personID:27^&*()_MN
+firstName:Fiona
+lastName:Lee
+address:33|New St|Melbourne|Victoria|Australia
+birthDate:14-10-2004
+isSuspended:false
